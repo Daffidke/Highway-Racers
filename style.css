@@ -1,0 +1,68 @@
+body {
+  margin: 0;
+  padding: 0;
+  background: #36454f;
+  font-family: "Bebas Neue", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: 1vh;
+}
+
+/*  Játékterület pont középen legyen.
+    Mivel a top és a left 50%, így a játéktér bal
+    felső sarka pont középen lenne.
+    Ebből vonjuk le a szélesség és magasság felét,
+    így a középpont lesz az oldal közepén.
+ */
+#gamearea {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-left: -300px;
+  margin-top: -300px;
+  width: 600px;
+  height: 600px;
+  background: url("./assets/background.jpg");
+  background-size: cover;
+  border: 10px solid black;
+  overflow: hidden;
+}
+
+h1,
+p {
+  color: white;
+  text-align: center;
+}
+
+.grass {
+  background: url("./assets/grass.jpg");
+  background-size: cover;
+  box-sizing: border-box;
+  position: absolute;
+  z-index: 0;
+}
+
+.road {
+  position: absolute;
+  box-sizing: border-box;
+  z-index: 0;
+}
+
+.line {
+  border-left: 3px solid rgba(255, 255, 0, 0.6);
+  border-right: 3px solid rgba(255, 255, 0, 0.6);
+}
+
+.car {
+  z-index: 1;
+  position: absolute;
+}
+
+.obstacle {
+  z-index: 1;
+  position: absolute;
+}
+
+#timer {
+  color: white;
+}
