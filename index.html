@@ -20,7 +20,36 @@
   </head>
   <body>
     <h1>Highway Racers: The Game</h1>
-    <p>Score: <span id="score">0</span></p>
+    <div id="help-container">
+      <div id="help">
+        <div class="list-container">
+          <p>Goal of The Game</p>
+          <ul>
+            <li>Two cars are racing on the highway.</li>
+            <li>As they go faster and faster, they need to avoid the cars in front of them.</li>
+            <li>Drive and avoid the obstacles on the highway.</li>
+            <li>After 5 crashes, one of the cars' engine will fail, so they stop.</li>
+            <li>You can choose a difficulty by selecting the size of the highway.</li>
+            <li>A score boost and a speed change happens every 10 seconds.</li>
+            <li>Get more and more points during the process.</li>
+            <li>Get on top of the leaderboard by getting the best highscore.</li>
+          </ul>
+        </div>
+        <div class="list-container">
+          <p>Controls</p>
+          <ul>
+            <li>Player One (Red Car) - Arrows</li>
+            <li>Player Two (Blue Car) - WASD</li>
+            <li>Enable or Disable music by clicking the button in the corner.</li>
+            <li>Enable or Disable SFX by clicking the button in the menu.</li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <button class="btn" onclick="getMenu()">Main Menu</button>
+      </div>
+    </div>
+    
     <script src="script.js"></script>
   </body>
 </html>
