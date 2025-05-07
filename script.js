@@ -1,24 +1,53 @@
-// Globális változók
+/* --
+ * GLOBÁLIS VÁLTOZÓK
+ * --
+*/
+
+// Pályával kapcsolatos változók
 let N = 8; // Játéktér: N*N, melyből N-2 sáv használható, kezdeti érték 8.
 let tileSize; // Egy mező mérete
-let gameArea;
-let firstCar;
-let secondCar;
-let firstCarPos;
-let secondCarPos;
-let carsOffset;
-let startTime;
-let timerInterval;
-let obstacleSpeed;
-let obstacleSpawner;
-let roadMover;
+let gameArea; // Játéktér
+
+// Játékosokkal kapcsolatos változók
+let firstCar; // Piros autó
+let secondCar; // Kék autó
+let firstCarPos; // Melyik mezőn van a piros
+let secondCarPos; // Melyik mezőn van a kék
+let carsOffset; // Mivel nem négyzet alakú a megjelenítendő kép, el kell tolni kicsivel a pályán.
+
+// Eltelt idővel kapcsolatos változók
+let startTime; // kezdeti idő
+let timerInterval; // időzítő Interval
+let obstacleSpeed; // idő függvényében változó sebesség
+let obstacleSpawner; // Akadály megjelenítése
+let spawnInterval; // idő függvényében változó akadály mennyiség
+let scoreMultiplier; // idő függvényében pontszám szorzó
+
+// Út mozgatására szolgáló Interval
+let roadMover; 
+
+// Game Over pislogására szolgáló Interval
 let textBlinker;
-let scoreMultiplier;
-let health;
+
+// Statisztikák
+let health; // Megmaradt élet
+let score; // Gyűjtött pontszám
+
+// Boolean értékek
 let isGameOver;
-let score;
-let menu;
-let help;
+let musicPlays;
+let sfxPlays;
+
+// HTML DOM változók
+let menu; // Menü
+let help; // Súgó
+let sfxToggle; // SFX gomb
+let musicToggle; // Zene gomb
+
+// Háttérzene
+const bgMusic = new Audio("assets/background-music-loop.mp3");
+bgMusic.loop = true;
+bgMusic.volume = 0.5;
 
 // Első játékos billentyűi - Nyilak
 let primary_KEYLEFT = "ARROWLEFT";
@@ -31,6 +60,198 @@ let secondary_KEYLEFT = "A";
 let secondary_KEYUP = "W";
 let secondary_KEYRIGHT = "D";
 let secondary_KEYDOWN = "S";
+
+/* --
+ * MENÜ RENDSZER
+ * --
+*/
+
+/**
+ * Oldal betöltése,
+ * Menü előhozása
+ */
+$(function () {
+  help = $("#help-container");
+  help.hide();
+  musicPlays = true;
+  sfxPlays = true;
+  getMenu();
+});
+
+/**
+ * Menü elhelyezése,
+ * Funkciógombok megjelenítése
+ * Kiválasztott nehézség megjelenítése
+ * Háttérzene kapcsolása
+ */
+function getMenu() {
+  menu = $('<div id="menu"></div>');
+  menu.append('<h1>Highway Racers:<br>The Game</h1>');
+  menu.append("<p>Choose a difficulty</p>");
+  menu.append(
+    $(
+      '<div class="btn-container"><button id="small" class="diff-btn" onclick="setDifficulty(6)">Small</button><button id="medium" class="diff-btn active" onclick="setDifficulty(8)">Medium</button><button id="large" class="diff-btn" onclick="setDifficulty(10)">Large</button></div>'
+    )
+  );
+  menu.append(
+    $(
+      '<button class="menu-btn" onclick="startGame()"><strong>Start Game</strong></button>'
+    )
+  );
+  menu.append(
+    $('<button class="menu-btn"><strong>Leaderboard</strong></button>')
+  );
+  menu.append(
+    $(
+      '<button class="menu-btn" onclick="getHelp()"><strong>Help</strong></button>'
+    )
+  );
+  menu.append($('<button class="menu-btn"><strong id="music-toggle"></strong></button>'));
+  menu.append($('<button class="menu-btn"><strong id="sfx-toggle"></strong></button>'));
+  menu.appendTo("body");
+  checkMusic();
+
+  $(".btn-container .diff-btn").on("click", function () {
+    $(".btn-container .diff-btn").removeClass("active");
+    $(this).addClass("active");
+  });
+
+  musicToggle.on("click", function () {
+    if (!musicPlays) {
+      musicPlays = true;
+      musicToggle.text("🔊 Music On");
+    } else {
+      musicPlays = false;
+      musicToggle.text("🔇 Music Off");
+    }
+  });
+
+  sfxToggle.on("click", function () {
+    if (!sfxPlays) {
+      sfxPlays = true;
+      sfxToggle.text("🔊 SFX On");
+    } else {
+      sfxPlays = false;
+      sfxToggle.text("🔇 SFX Off");
+    }
+  });
+}
+
+/**
+ * Zene kapcsolása
+ * SFX kapcsolása
+ */
+function checkMusic(){
+  musicToggle = $("#music-toggle");
+  if(musicPlays){
+    musicToggle.text("🔊 Music On");
+  }
+  else{
+    musicToggle.text("🔇 Music Off");
+  }
+  sfxToggle = $('#sfx-toggle');
+  if(sfxPlays){
+    sfxToggle.text("🔊 SFX On");
+  }
+  else{
+    sfxToggle.text("🔇 SFX Off");
+  }
+}
+
+/**
+ * Súgó megjelenítése,
+ * Menü elrejtése.
+ * A visszalépés html onclick-ben van megoldva.
+ */
+function getHelp() {
+  menu.hide();
+  help.show();
+}
+
+/**
+ * Pályaméret beállítása
+ * Játszható méret: N-2
+ */
+function setDifficulty(size) {
+  N = size;
+}
+
+/* --
+ * JÁTÉK BETÖLTÉSE
+ * --
+*/
+
+/** Menüből ide kerülünk
+ * A játéktér elhelyezése,
+ * Elemek elhelyezése,
+ * Számláló elindítása,
+ * Életek számlálása,
+ * Eseménykezelő a gombokra
+ */
+function startGame() {
+  menu.remove();
+  gameArea = $("<div></div>");
+  gameArea.appendTo("body");
+  gameArea.attr("id", "gamearea");
+  $('<div class="btn-container"></div>').appendTo("body");
+  $(
+    '<button id="reset" class="btn" onclick="resetGame()">Play Again</button>'
+  ).appendTo(".btn-container");
+  $(
+    '<button id="menuButton" class="btn" onclick="goToMainMenu()">Main Menu</button>'
+  ).appendTo(".btn-container");
+  $('<div class="gameover"></div>').appendTo("body");
+  gameInit();
+  roadInit();
+  addCars();
+  loadTimer();
+  $(window).on("keydown", moveCar);
+}
+
+/** Ez lefut minden resetnél, új játék kezdésnél
+ * Elemek kezdeti állapotba hozása
+ * Autók pozíciója,
+ * Sebesség,
+ * Pont szorzó,
+ * Életek
+ * */
+function gameInit() {
+  if(musicPlays){
+    $(
+      '<audio id="bg-music" src="./assets/background-music-loop.mp3" loop></audio>'
+    ).appendTo("#gamearea");
+    bgMusic.play();
+  }
+  else{
+    bgMusic.pause();
+  }
+  tileSize = 600 / N;
+  spawnInterval = 1000;
+  carsOffset = 17;
+  firstCarPos = { x: N - 2, y: N - 1 };
+  secondCarPos = { x: 1, y: N - 1 };
+  obstacleSpeed = 4;
+  scoreMultiplier = 1;
+  score = 0;
+  health = 5;
+  isGameOver = false;
+  $('<div id="infoBlock"></div>').appendTo("#gamearea");
+  $('<p class="info">Score: <br><span id="score"></span></p>').appendTo(
+    "#infoBlock"
+  );
+  $('<p class="info">Time: <br><span id="timer"></span></p>').appendTo(
+    "#infoBlock"
+  );
+  $('<p class="info">Lives: <br><span id="health"></span> ❤️</p>').appendTo(
+    "#infoBlock"
+  );
+  $("#health").text(health);
+  moveRoad();
+  spawnObstacle();
+  $(".btn-container").hide();
+  $(".gameover").hide();
+  clearInterval(textBlinker);
+}
 
 /**
  * Út generálása, kirajzolása.
@@ -67,6 +288,16 @@ function roadInit() {
 }
 
 /**
+ * Út mozgására szolgáló intervallum.
+ * 200ms-enként változik az útszakasz válaszvonala.
+ * */
+function moveRoad() {
+  roadMover = setInterval(function () {
+    $(".road").toggleClass("line"); // border változik felváltva soronként
+  }, 200);
+}
+
+/**
  * Autók létrehozása, kirajzolása.
  * Méretük megfelel egy mező méretének.
  */
@@ -88,6 +319,37 @@ function addCars() {
   firstCar.appendTo(gameArea);
   secondCar.appendTo(gameArea);
 }
+
+/**
+ * Eltelt idő alapján történő események kezelése:
+ * Eltelt idő megjelenítése a felhasználónak. (Mostani idő és a játék kezdetének ideje alapján)
+ * Kiszámolt pontszám megjelenítése a felhasználónak.
+ * Akadályok közeledési sebessége növelése minden 10 sec után.
+ * Pont szorzó növelése minden 10 sec után.
+ * */
+function loadTimer() {
+  startTime = Date.now(); // Játék kezdetének ideje
+  timerInterval = setInterval(function () {
+    let seconds = Math.floor((Date.now() - startTime) / 1000); // Eltelt idő sec-ben
+    score = seconds * scoreMultiplier;
+
+    // Kiírás a felhasználónak
+    $("#timer").text(seconds);
+    $("#score").text(score);
+
+    // Sebesség és pont szorzó növelése minden 10 sec után
+    if (seconds > 0 && seconds % 10 === 0) {
+      obstacleSpeed += 1;
+      scoreMultiplier++;
+      spawnInterval *= 0.8;
+    }
+  }, 500);
+}
+
+/* --
+ * INTERAKCIÓK JÁTÉK KÖZBEN
+ * --
+*/
 
 /**
  *  Autók mozgatása minden irányba (eseménykezeléssel)
@@ -146,19 +408,20 @@ function moveCar(e) {
   if (movedCar === "first") {
     firstCarPos.x = Math.max(1, Math.min(N - 2, firstCarPos.x));
     firstCarPos.y = Math.max(0, Math.min(N - 1, firstCarPos.y));
-    animateCar(firstCar, firstCarPos, checkCollision);
+    checkCollision();
+    animateCar(firstCar, firstCarPos);
   } else if (movedCar === "second") {
     secondCarPos.x = Math.max(1, Math.min(N - 2, secondCarPos.x));
     secondCarPos.y = Math.max(0, Math.min(N - 1, secondCarPos.y));
-    animateCar(secondCar, secondCarPos, checkCollision);
+    checkCollision();
+    animateCar(secondCar, secondCarPos);
   }
 }
 
 /**
  *  Mozgatott autó animálása
- *  Az animáció után, a callback függvényben történik a további vizsgálat
  */
-function animateCar(movedCar, movedCarPos, callback) {
+function animateCar(movedCar, movedCarPos) {
   movedCar.animate(
     {
       top: movedCarPos.y * tileSize,
@@ -167,19 +430,19 @@ function animateCar(movedCar, movedCarPos, callback) {
     {
       duration: 300, // 300ms
       queue: false, // Ne sorban menjenek az animációk
-      complete: callback, // Csak az animáció után történjen ellenőrzés, hogy lássa a felhasználó, mi történik
     }
   );
 }
 
 /**
- * Ha ütközik a két autó,
- * TODO: Ha ütközünk az akadállyal, élet -1
- * Game Over, reset
+ * Ellenőrizzük, hogy ütköznek-e a játékosok egymással
+ * Lekérjük a két játékos elhelyezkedését.
+ * Ha ütköztek, Game Over.
  * */
 function checkCollision() {
   let check = 0;
-  if (firstCarPos.x === secondCarPos.x && firstCarPos.y === secondCarPos.y) {
+  // Ütköztek-e az autók
+  if(firstCarPos.x === secondCarPos.x && firstCarPos.y === secondCarPos.y){
     check++;
   }
   if (check === 1 && !isGameOver) {
@@ -219,23 +482,24 @@ function addObstacle() {
     topPos += obstacleSpeed;
     obstacle.css("top", topPos);
 
-    // Check collision AFTER updating the obstacle's position
+    // Ütközés ellenőrzése
     if (obstacleHitsCar(obstacle)) {
       hitCount++;
     }
 
-    if (hitCount === 1 && !isGameOver) {
-      let randomTurn = Math.floor(Math.random() * 2);
+    if (hitCount === 1 && !isGameOver) { // Csak az első ütközésnél, mert sokszor tér vissza a függvény.
+      playCrashSound();
+      let randomTurn = Math.floor(Math.random() * 2); // Random irányba forduljon el az akadály
       switch (randomTurn) {
         case 0:
           obstacle.addClass("rotatedLeft");
         case 1:
           obstacle.addClass("rotatedRight");
       }
-      health--;
+      health--; // Élet levonása, frissítése
       $("#health").text(health);
 
-      if (health < 1) {
+      if (health < 1) { // Game Over, ha elfogyott az élet
         clearInterval(interval);
         obstacle.remove();
         gameOver("<p>Your car gave up!</p>");
@@ -250,15 +514,31 @@ function addObstacle() {
   }, 16);
 }
 
+/**
+ * Akadályok megjelenésére szolgáló intervallum.
+ * 1 sec a kezdeti érték.
+ * 20%-kal csökken 10sec után.
+ * */
+function spawnObstacle() {
+  addObstacle();
+  obstacleSpawner = setTimeout(spawnObstacle, spawnInterval); // rekurzív hívás
+}
+
+/**
+ * Ellenőrizzük, hogy ütköznek-e a játékosok az akadályokkal
+ * Minden akadályra külön ellenőrzünk.
+ * Lekérjük az akadály, és a két játékos elhelyezkedését.
+ * Ha ütközött valamelyik, true
+ * */
 function obstacleHitsCar(obstacle) {
-  // Get the obstacle's visual position (post-animation)
+  // Akadály elhelyezkedése
   const obstacleRect = obstacle[0].getBoundingClientRect();
 
-  // Get the cars' visual positions (post-animation)
+  // Játékosok elhelyezkedése
   const firstCarRect = firstCar[0].getBoundingClientRect();
   const secondCarRect = secondCar[0].getBoundingClientRect();
 
-  // Check collision with first car
+  // Ütközött-e az első autó
   const hitFirstCar = !(
     obstacleRect.right < firstCarRect.left ||
     obstacleRect.left > firstCarRect.right ||
@@ -266,7 +546,7 @@ function obstacleHitsCar(obstacle) {
     obstacleRect.top > firstCarRect.bottom
   );
 
-  // Check collision with second car
+  // Ütközött-e a második autó
   const hitSecondCar = !(
     obstacleRect.right < secondCarRect.left ||
     obstacleRect.left > secondCarRect.right ||
@@ -278,64 +558,20 @@ function obstacleHitsCar(obstacle) {
 }
 
 /**
- * Eltelt idő alapján történő események kezelése:
- * Eltelt idő megjelenítése a felhasználónak. (Mostani idő és a játék kezdetének ideje alapján)
- * Kiszámolt pontszám megjelenítése a felhasználónak.
- * Akadályok közeledési sebessége növelése minden 10 sec után.
- * Pont szorzó növelése minden 10 sec után.
+ * Ütközés hang lejátszása,
+ * ha be van kapcsolva az SFX.
  * */
-function loadTimer() {
-  startTime = Date.now(); // Játék kezdetének ideje
-  timerInterval = setInterval(function () {
-    let seconds = Math.floor((Date.now() - startTime) / 1000); // Eltelt idő sec-ben
-    score = seconds * scoreMultiplier;
-
-    // Kiírás a felhasználónak
-    $("#timer").text(seconds);
-    $("#score").text(score);
-
-    // Sebesség és pont szorzó növelése minden 10 sec után
-    if (seconds > 0 && seconds % 10 === 0) {
-      obstacleSpeed += 2;
-      scoreMultiplier++;
-    }
-  }, 500);
+function playCrashSound() {
+  if(sfxPlays){
+    const crashAudio = new Audio("assets/crash-sfx.mp3");
+    crashAudio.play();
+  }
 }
 
-/**
- * Elemek kezdeti állapotba hozása
- * Autók pozíciója,
- * Sebesség,
- * Pont szorzó,
- * Életek
- * */
-function gameInit() {
-  tileSize = 600 / N;
-  carsOffset = 17;
-  firstCarPos = { x: N - 2, y: N - 1 };
-  secondCarPos = { x: 1, y: N - 1 };
-  obstacleSpeed = 4;
-  scoreMultiplier = 1;
-  score = 0;
-  health = 5;
-  isGameOver = false;
-  $('<div id="infoBlock"></div>').appendTo("#gamearea");
-  $('<p class="info">Score: <br><span id="score"></span></p>').appendTo(
-    "#infoBlock"
-  );
-  $('<p class="info">Time: <br><span id="timer"></span></p>').appendTo(
-    "#infoBlock"
-  );
-  $('<p class="info">Lives: <br><span id="health"></span> ❤️</p>').appendTo(
-    "#infoBlock"
-  );
-  $("#health").text(health);
-  moveRoad();
-  spawnObstacle();
-  $(".btn-container").hide();
-  $(".gameover").hide();
-  clearInterval(textBlinker);
-}
+/* --
+ * INTERAKCIÓK JÁTÉK VÉGE UTÁN
+ * --
+*/
 
 /**
  * Játék vége.
@@ -349,6 +585,7 @@ function gameOver(msg) {
   $(".btn-container").show();
   $(".gameover").append("GAME OVER" + msg);
   $(".gameover").show();
+  playGameOverSound();
   $("#gamearea").animate(
     {
       opacity: 0.4,
@@ -358,7 +595,7 @@ function gameOver(msg) {
   firstCar.addClass("rotatedRight");
   secondCar.addClass("rotatedLeft");
   setTimeout(function () {
-    clearInterval(obstacleSpawner);
+    clearTimeout(obstacleSpawner);
     clearInterval(roadMover);
     clearInterval(timerInterval);
     gameOverBlink();
@@ -366,147 +603,17 @@ function gameOver(msg) {
 }
 
 /**
- * Új játék kezdése.
+ * Háttérzene megállítása,
+ * Game Over hang lejátszása,
+ * ha be van kapcsolva a hang.
  * */
-function resetGame() {
-  $("#gamearea").empty();
-  $(".gameover").empty();
-  clearInterval(timerInterval);
-
-  gameInit();
-  roadInit();
-  addCars();
-  loadTimer();
-
-  $("#gamearea").animate(
-    {
-      opacity: 1,
-    },
-    700
-  );
-}
-
-/**
- * A játéktér elhelyezése,
- * Elemek elhelyezése,
- * Számláló elindítása,
- * Életek számlálása,
- * Eseménykezelő a gombokra
- */
-function startGame() {
-  menu.remove();
-  gameArea = $("<div></div>");
-  gameArea.appendTo("body");
-  gameArea.attr("id", "gamearea");
-  $('<div class="btn-container"></div>').appendTo("body");
-  $(
-    '<button id="reset" class="btn" onclick="resetGame()">Play Again</button>'
-  ).appendTo(".btn-container");
-  $(
-    '<button id="menuButton" class="btn" onclick="mainMenu()">Main Menu</button>'
-  ).appendTo(".btn-container");
-  $('<div class="gameover"></div>').appendTo("body");
-  gameInit();
-  roadInit();
-  addCars();
-  loadTimer();
-  $(window).on("keydown", moveCar);
-}
-
-/**
- * Minden, a játékhoz tartozó elem törlése,
- * Menü megjelenítése
- */
-function mainMenu() {
-  $(".btn-container").remove();
-  $("#gamearea").remove();
-  $(".gameover").remove();
-  $(window).off("keydown", moveCar);
-  getMenu();
-}
-
-function getHelp(){
-  menu.hide();
-  help.show();
-}
-
-/**
- * Pályaméret beállítása
- * Játszható méret: N-2
- */
-function setDifficulty(size) {
-  N = size;
-}
-
-/**
- * Menü elhelyezése,
- * Funkciógombok megjelenítése
- */
-function getMenu(){
-  help.hide();
-  menu = $('<div id="menu"></div>');
-  menu.append('<p>Choose a difficulty</p>');
-  menu.append(
-    $(
-      '<div class="btn-container"><button id="small" class="diff-btn" onclick="setDifficulty(6)">Small</button><button id="medium" class="diff-btn active" onclick="setDifficulty(8)">Medium</button><button id="large" class="diff-btn" onclick="setDifficulty(10)">Large</button></div>'
-    )
-  );
-  menu.append(
-    $('<button class="menu-btn" onclick="startGame()"><strong>Start Game</strong></button>')
-  );
-  menu.append($('<button class="menu-btn"><strong>Leaderboard</strong></button>'));
-  menu.append($('<button class="menu-btn" onclick="getHelp()"><strong>Help</strong></button>'));
-  menu.appendTo("body");
-
-  $(".btn-container .diff-btn").on("click", function() {
-    $(".btn-container .diff-btn").removeClass("active");
-    $(this).addClass("active");
-  });
-}
-
-/**
- * Oldal betöltése,
- * Menü előhozása
- */
-$(function () {
-  help = $('#help-container');
-  getMenu();
-  $('<audio id="bg-music" src="./assets/background-music-loop.mp3" loop></audio>').appendTo('body');
-  $('<button id="music-toggle">🔊 Music On</button>').appendTo('body');
-
-  const musicToggle = $("#music-toggle");
-
-  const bgMusic = new Audio('assets/background-music-loop.mp3');
-  bgMusic.loop = true;
-  bgMusic.play();
-
-musicToggle.on("click", function () {
-  if (musicToggle.text() === "🔇 Music Off") {
-    bgMusic.play();
-    musicToggle.text("🔊 Music On");
-  } else {
+function playGameOverSound() {
+  if(musicPlays || sfxPlays){
     bgMusic.pause();
-    musicToggle.text("🔇 Music Off");
+    bgMusic.currentTime = 0;
+    const gameOverAudio = new Audio("assets/gameover-sfx.mp3");
+    gameOverAudio.play();
   }
-});
-});
-
-/**
- * Út mozgására szolgáló intervallum.
- * 200ms-enként változik az útszakasz válaszvonala.
- * */
-function moveRoad() {
-  roadMover = setInterval(function () {
-    $(".road").toggleClass("line"); // border változik felváltva soronként
-  }, 200);
-}
-
-/**
- * Akadályok megjelenésére szolgáló intervallum.
- * 1 sec a kezdeti érték.
- * */
-function spawnObstacle() {
-  obstacleSpawner = setInterval(addObstacle, 1000);
 }
 
 /**
@@ -516,4 +623,39 @@ function gameOverBlink() {
   textBlinker = setInterval(function () {
     $(".gameover").fadeToggle(100);
   }, 500);
+}
+
+/**
+ * Játéktér törlése,
+ * Game Over felirat törlése,
+ * Számláló törlése,
+ * Új játék kezdése.
+ * */
+function resetGame() {
+  $("#gamearea").animate(
+    {
+      opacity: 1,
+    },
+    700
+  );
+  $("#gamearea").remove();
+  $(".gameover").remove();
+  $(".btn-container").remove();
+  clearInterval(timerInterval);
+  $(window).off("keydown", moveCar);
+
+  startGame();
+}
+
+/**
+ * Minden, a játékhoz tartozó elem törlése,
+ * Menü megjelenítése
+ */
+function goToMainMenu() {
+  $(".btn-container").remove();
+  $("#gamearea").remove();
+  $(".gameover").remove();
+  $(window).off("keydown", moveCar);
+  clearInterval(timerInterval);
+  getMenu();
 }

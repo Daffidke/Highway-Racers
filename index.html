@@ -19,7 +19,10 @@
     <script src="https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
   </head>
   <body>
-    <h1>Highway Racers: The Game</h1>
+    <div id="header-container">
+      <span>Bárkányi Dávid</span>
+      <span>X28GSU</span>
+    </div>
     <div id="help-container">
       <div id="help">
         <div class="list-container">
@@ -33,6 +36,7 @@
             <li>A score boost and a speed change happens every 10 seconds.</li>
             <li>Get more and more points during the process.</li>
             <li>Get on top of the leaderboard by getting the best highscore.</li>
+            <li>Creator: Bárkányi Dávid, X28GSU</li>
           </ul>
         </div>
         <div class="list-container">
@@ -40,13 +44,15 @@
           <ul>
             <li>Player One (Red Car) - Arrows</li>
             <li>Player Two (Blue Car) - WASD</li>
-            <li>Enable or Disable music by clicking the button in the corner.</li>
+            <li>Enable or Disable music by clicking the button in the menu.</li>
+            <li>By default, it plays during the game.</li>
             <li>Enable or Disable SFX by clicking the button in the menu.</li>
+            <li>By default, it's enabled during the game.</li>
           </ul>
         </div>
       </div>
       <div>
-        <button class="btn" onclick="getMenu()">Main Menu</button>
+        <button class="btn" onclick="$('#help-container').hide(); $('#menu').show()">Main Menu</button>
       </div>
     </div>
     
