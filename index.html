@@ -29,13 +29,22 @@
           <p>Goal of The Game</p>
           <ul>
             <li>Two cars are racing on the highway.</li>
-            <li>As they go faster and faster, they need to avoid the cars in front of them.</li>
+            <li>
+              As they go faster and faster, they need to avoid the cars in front
+              of them.
+            </li>
             <li>Drive and avoid the obstacles on the highway.</li>
-            <li>After 5 crashes, one of the cars' engine will fail, so they stop.</li>
-            <li>You can choose a difficulty by selecting the size of the highway.</li>
+            <li>
+              After 5 crashes, one of the cars' engine will fail, so they stop.
+            </li>
+            <li>
+              You can choose a difficulty by selecting the size of the highway.
+            </li>
             <li>A score boost and a speed change happens every 10 seconds.</li>
             <li>Get more and more points during the process.</li>
-            <li>Get on top of the leaderboard by getting the best highscore.</li>
+            <li>
+              Get on top of the leaderboard by getting the best highscore.
+            </li>
             <li>Creator: Bárkányi Dávid, X28GSU</li>
           </ul>
         </div>
@@ -52,10 +61,54 @@
         </div>
       </div>
       <div>
-        <button class="btn" onclick="$('#help-container').hide(); $('#menu').show()">Main Menu</button>
+        <button
+          class="btn"
+          onclick="$('#help-container').hide(); $('#menu').show()"
+        >
+          Main Menu
+        </button>
       </div>
     </div>
-    
+
     <script src="script.js"></script>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+      import {
+        getFirestore,
+        collection,
+        addDoc,
+        getDocs,
+        query,
+        orderBy,
+        where,
+        Timestamp 
+      } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+      // Webapp config
+      const firebaseConfig = {
+        apiKey: "paste_api_key",
+        authDomain: "highway-racers-1352b.firebaseapp.com",
+        projectId: "highway-racers-1352b",
+        storageBucket: "highway-racers-1352b.firebasestorage.app",
+        messagingSenderId: "1060445680992",
+        appId: "1:1060445680992:web:a58ad6f4366efbe962da05",
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+
+      // Initialize Firestore and attach to window
+      window.db = getFirestore(app);
+
+      // Attach Firestore helpers to window for use in non-module scripts
+      window.collection = collection;
+      window.addDoc = addDoc;
+      window.getDocs = getDocs;
+      window.query = query;
+      window.orderBy = orderBy;
+      window.where = where;
+      window.Timestamp = Timestamp;
+    </script>
   </body>
 </html>

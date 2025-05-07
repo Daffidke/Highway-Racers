@@ -132,19 +132,15 @@ p {
 #infoBlock {
   position: absolute;
   z-index: 1;
+  background: rgba(0, 0, 0, 0.5);
+  border-bottom-right-radius: 2vh;
 }
 
 .info {
   text-align: left;
-  color: #000000;
+  color: white;
   font-size: 3vh;
   padding: 1vh;
-}
-
-#score,
-#timer,
-#health {
-  color: white;
 }
 
 /* Ha vesztünk, ez a szöveg jelenik meg.
@@ -164,6 +160,20 @@ p {
 .gameover p {
   font-size: 2.5vh;
   letter-spacing: 1vh;
+}
+/* Vesztés utáni felhasználónév input
+** 
+*/
+#username {
+  padding: 1.5vh;
+  padding-left: 2vh;
+  padding-right: 2vh;
+  border-radius: 1vh;
+  border: 2px solid black;
+  font-family: "Bebas Neue", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 2vh;
 }
 
 /* Menü megjelenése
@@ -316,4 +326,39 @@ strong:hover {
 
 #help-container p {
   margin: 0;
+}
+
+/* Toplista megjelenítése
+*/
+#leaderboard-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 40%;
+  letter-spacing: 0.5vh;
+  font-size: 2vh;
+  gap: 3vh;
+}
+
+#leaderboard-container table {
+  width: 100%;
+  border: 5px solid black;
+  border-radius: 2vh;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+#leaderboard-container td {
+  text-align: center;
+  color: white;
+  border: none;
+}
+
+#leaderboard-container th {
+  text-align: center;
+  color: yellow;
+  border: none;
+  font-weight: bold;
+  border-bottom: 5px solid black;
+  font-size: 2.5vh;
 }

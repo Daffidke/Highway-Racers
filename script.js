@@ -1,7 +1,7 @@
 /* --
  * GLOBÁLIS VÁLTOZÓK
  * --
-*/
+ */
 
 // Pályával kapcsolatos változók
 let N = 8; // Játéktér: N*N, melyből N-2 sáv használható, kezdeti érték 8.
@@ -24,7 +24,7 @@ let spawnInterval; // idő függvényében változó akadály mennyiség
 let scoreMultiplier; // idő függvényében pontszám szorzó
 
 // Út mozgatására szolgáló Interval
-let roadMover; 
+let roadMover;
 
 // Game Over pislogására szolgáló Interval
 let textBlinker;
@@ -41,6 +41,7 @@ let sfxPlays;
 // HTML DOM változók
 let menu; // Menü
 let help; // Súgó
+let leaderboard; // Toplista
 let sfxToggle; // SFX gomb
 let musicToggle; // Zene gomb
 
@@ -64,7 +65,7 @@ let secondary_KEYDOWN = "S";
 /* --
  * MENÜ RENDSZER
  * --
-*/
+ */
 
 /**
  * Oldal betöltése,
@@ -86,7 +87,7 @@ $(function () {
  */
 function getMenu() {
   menu = $('<div id="menu"></div>');
-  menu.append('<h1>Highway Racers:<br>The Game</h1>');
+  menu.append("<h1>Highway Racers:<br>The Game</h1>");
   menu.append("<p>Choose a difficulty</p>");
   menu.append(
     $(
@@ -99,15 +100,21 @@ function getMenu() {
     )
   );
   menu.append(
-    $('<button class="menu-btn"><strong>Leaderboard</strong></button>')
+    $(
+      '<button class="menu-btn" onclick="getLeaderboard()"><strong>Leaderboard</strong></button>'
+    )
   );
   menu.append(
     $(
       '<button class="menu-btn" onclick="getHelp()"><strong>Help</strong></button>'
     )
   );
-  menu.append($('<button class="menu-btn"><strong id="music-toggle"></strong></button>'));
-  menu.append($('<button class="menu-btn"><strong id="sfx-toggle"></strong></button>'));
+  menu.append(
+    $('<button class="menu-btn"><strong id="music-toggle"></strong></button>')
+  );
+  menu.append(
+    $('<button class="menu-btn"><strong id="sfx-toggle"></strong></button>')
+  );
   menu.appendTo("body");
   checkMusic();
 
@@ -141,19 +148,17 @@ function getMenu() {
  * Zene kapcsolása
  * SFX kapcsolása
  */
-function checkMusic(){
+function checkMusic() {
   musicToggle = $("#music-toggle");
-  if(musicPlays){
+  if (musicPlays) {
     musicToggle.text("🔊 Music On");
-  }
-  else{
+  } else {
     musicToggle.text("🔇 Music Off");
   }
-  sfxToggle = $('#sfx-toggle');
-  if(sfxPlays){
+  sfxToggle = $("#sfx-toggle");
+  if (sfxPlays) {
     sfxToggle.text("🔊 SFX On");
-  }
-  else{
+  } else {
     sfxToggle.text("🔇 SFX Off");
   }
 }
@@ -168,6 +173,15 @@ function getHelp() {
   help.show();
 }
 
+function getLeaderboard() {
+  menu.remove();
+  leaderboard = $('<div id="leaderboard-container"></div>');
+  leaderboard.appendTo("body");
+  leaderboard.html("<h1>Loading leaderboard...</h1>");
+  printLeaderboard();
+  leaderboard.show();
+}
+
 /**
  * Pályaméret beállítása
  * Játszható méret: N-2
@@ -179,7 +193,7 @@ function setDifficulty(size) {
 /* --
  * JÁTÉK BETÖLTÉSE
  * --
-*/
+ */
 
 /** Menüből ide kerülünk
  * A játéktér elhelyezése,
@@ -200,6 +214,12 @@ function startGame() {
   $(
     '<button id="menuButton" class="btn" onclick="goToMainMenu()">Main Menu</button>'
   ).appendTo(".btn-container");
+  $(
+    '<input type="text" name="username" id="username" placeholder="Enter username...">'
+  ).appendTo(".btn-container");
+  $(
+    '<button id="save-game" class="btn" onclick="saveGame()">Save Game</button>'
+  ).appendTo(".btn-container");
   $('<div class="gameover"></div>').appendTo("body");
   gameInit();
   roadInit();
@@ -216,13 +236,12 @@ function startGame() {
  * Életek
  * */
 function gameInit() {
-  if(musicPlays){
+  if (musicPlays) {
     $(
       '<audio id="bg-music" src="./assets/background-music-loop.mp3" loop></audio>'
     ).appendTo("#gamearea");
     bgMusic.play();
-  }
-  else{
+  } else {
     bgMusic.pause();
   }
   tileSize = 600 / N;
@@ -349,7 +368,7 @@ function loadTimer() {
 /* --
  * INTERAKCIÓK JÁTÉK KÖZBEN
  * --
-*/
+ */
 
 /**
  *  Autók mozgatása minden irányba (eseménykezeléssel)
@@ -442,7 +461,7 @@ function animateCar(movedCar, movedCarPos) {
 function checkCollision() {
   let check = 0;
   // Ütköztek-e az autók
-  if(firstCarPos.x === secondCarPos.x && firstCarPos.y === secondCarPos.y){
+  if (firstCarPos.x === secondCarPos.x && firstCarPos.y === secondCarPos.y) {
     check++;
   }
   if (check === 1 && !isGameOver) {
@@ -487,7 +506,8 @@ function addObstacle() {
       hitCount++;
     }
 
-    if (hitCount === 1 && !isGameOver) { // Csak az első ütközésnél, mert sokszor tér vissza a függvény.
+    if (hitCount === 1 && !isGameOver) {
+      // Csak az első ütközésnél, mert sokszor tér vissza a függvény.
       playCrashSound();
       let randomTurn = Math.floor(Math.random() * 2); // Random irányba forduljon el az akadály
       switch (randomTurn) {
@@ -499,7 +519,8 @@ function addObstacle() {
       health--; // Élet levonása, frissítése
       $("#health").text(health);
 
-      if (health < 1) { // Game Over, ha elfogyott az élet
+      if (health < 1) {
+        // Game Over, ha elfogyott az élet
         clearInterval(interval);
         obstacle.remove();
         gameOver("<p>Your car gave up!</p>");
@@ -562,7 +583,7 @@ function obstacleHitsCar(obstacle) {
  * ha be van kapcsolva az SFX.
  * */
 function playCrashSound() {
-  if(sfxPlays){
+  if (sfxPlays) {
     const crashAudio = new Audio("assets/crash-sfx.mp3");
     crashAudio.play();
   }
@@ -571,7 +592,7 @@ function playCrashSound() {
 /* --
  * INTERAKCIÓK JÁTÉK VÉGE UTÁN
  * --
-*/
+ */
 
 /**
  * Játék vége.
@@ -608,7 +629,7 @@ function gameOver(msg) {
  * ha be van kapcsolva a hang.
  * */
 function playGameOverSound() {
-  if(musicPlays || sfxPlays){
+  if (musicPlays || sfxPlays) {
     bgMusic.pause();
     bgMusic.currentTime = 0;
     const gameOverAudio = new Audio("assets/gameover-sfx.mp3");
@@ -655,7 +676,96 @@ function goToMainMenu() {
   $(".btn-container").remove();
   $("#gamearea").remove();
   $(".gameover").remove();
+  $("#leaderboard-container").remove();
   $(window).off("keydown", moveCar);
   clearInterval(timerInterval);
   getMenu();
+}
+
+/**
+ * Felhasználónév validálása,
+ * ha nem üres az input,
+ * és nem létezik még a felhasználónév,
+ * mentés
+ */
+async function saveGame() {
+  $(".gameover").empty().append("SAVING...");
+  let userInput = $("#username").val().trim();
+  if (await isUsernameTaken(userInput)) {
+    alert("Username is already taken!");
+    return;
+  } else if (userInput === "") {
+    alert("Enter a username!");
+    return;
+  } else {
+    saveScoreToFirestore(userInput, score);
+  }
+}
+
+/**
+ * Létezik-e Firestore-ban a felhasználónév
+ */
+async function isUsernameTaken(username) {
+  const leaderboardRef = collection(db, "leaderboard");
+  const q = query(leaderboardRef, where("username", "==", username));
+  const querySnapshot = await getDocs(q);
+  return !querySnapshot.empty;
+}
+
+/**
+ * Játék adatok mentése Firestore-ba,
+ * Játékosnév,
+ * Pontszám,
+ * Idő
+ */
+async function saveScoreToFirestore(username, score) {
+  try {
+    await addDoc(collection(db, "leaderboard"), {
+      username: username,
+      score: score,
+      timestamp: Timestamp.now(),
+    });
+    goToMainMenu();
+    alert("Save succesful!");
+  } catch (e) {
+    console.error("Error adding document: ", e);
+  }
+}
+
+async function printLeaderboard() {
+  const leaderboardRef = collection(db, "leaderboard");
+  const q = query(leaderboardRef, orderBy("score", "desc"));
+  const querySnapshot = await getDocs(q);
+
+  // Táblázat felépítése
+  const table = $(
+    `<table border="1" cellpadding="5" cellspacing="0">
+       <thead>
+         <tr><th>Username</th><th>Score</th><th>Time</th></tr>
+       </thead>
+       <tbody id="table-row"></tbody>
+     </table>`
+  );
+
+  const tbody = table.find("#table-row");
+
+  // Sorok hozzáadása
+  querySnapshot.forEach((doc) => {
+    const data = doc.data();
+    const formattedDate = data.timestamp.toDate().toLocaleString();
+    tbody.append(
+      `<tr>
+         <td>${data.username}</td>
+         <td>${data.score}</td>
+         <td>${formattedDate}</td>
+       </tr>`
+    );
+  });
+
+  // Hozzáadás a toplistához
+  $("#leaderboard-container")
+    .empty()
+    .append($("<h1>LEADERBOARD</h1>"))
+    .append(table)
+    .append($('<div class="btn" onclick="goToMainMenu()">Main Page</button>'));
 }
