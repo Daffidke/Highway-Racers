@@ -110,19 +110,23 @@ function getMenu() {
     )
   );
   menu.append(
-    $('<button class="menu-btn"><strong id="music-toggle"></strong></button>')
+    $(
+      '<button class="menu-btn"><strong id="music-toggle">🔊 Music On</strong></button>'
+    )
   );
   menu.append(
-    $('<button class="menu-btn"><strong id="sfx-toggle"></strong></button>')
+    $(
+      '<button class="menu-btn"><strong id="sfx-toggle">🔊 SFX On</strong></button>'
+    )
   );
   menu.appendTo("body");
-  checkMusic();
 
   $(".btn-container .diff-btn").on("click", function () {
     $(".btn-container .diff-btn").removeClass("active");
     $(this).addClass("active");
   });
 
+  musicToggle = $("#music-toggle");
   musicToggle.on("click", function () {
     if (!musicPlays) {
       musicPlays = true;
@@ -133,6 +137,7 @@ function getMenu() {
     }
   });
 
+  sfxToggle = $("#sfx-toggle");
   sfxToggle.on("click", function () {
     if (!sfxPlays) {
       sfxPlays = true;
@@ -145,25 +150,6 @@ function getMenu() {
 }
 
 /**
- * Zene kapcsolása
- * SFX kapcsolása
- */
-function checkMusic() {
-  musicToggle = $("#music-toggle");
-  if (musicPlays) {
-    musicToggle.text("🔊 Music On");
-  } else {
-    musicToggle.text("🔇 Music Off");
-  }
-  sfxToggle = $("#sfx-toggle");
-  if (sfxPlays) {
-    sfxToggle.text("🔊 SFX On");
-  } else {
-    sfxToggle.text("🔇 SFX Off");
-  }
-}
-
-/**
  * Súgó megjelenítése,
  * Menü elrejtése.
  * A visszalépés html onclick-ben van megoldva.
@@ -173,12 +159,18 @@ function getHelp() {
   help.show();
 }
 
+/**
+ * Toplista megjelenítése,
+ * Menü elrejtése.
+ * Toplista felépítése
+ * Megjelenítés
+ */
 function getLeaderboard() {
-  menu.remove();
+  menu.hide();
   leaderboard = $('<div id="leaderboard-container"></div>');
   leaderboard.appendTo("body");
   leaderboard.html("<h1>Loading leaderboard...</h1>");
-  printLeaderboard();
+  printLeaderboard(); // Lenti, adatbázis szekcióban van megvalósítva
   leaderboard.show();
 }
 
@@ -203,24 +195,24 @@ function setDifficulty(size) {
  * Eseménykezelő a gombokra
  */
 function startGame() {
-  menu.remove();
+  menu.hide();
   gameArea = $("<div></div>");
   gameArea.appendTo("body");
   gameArea.attr("id", "gamearea");
-  $('<div class="btn-container"></div>').appendTo("body");
+  $('<div class="btn-container" id="options"></div>').appendTo("body");
   $(
-    '<button id="reset" class="btn" onclick="resetGame()">Play Again</button>'
-  ).appendTo(".btn-container");
+    '<button id="reset" class="btn" onclick="resetGame(); startGame();">Play Again</button>'
+  ).appendTo("#options");
   $(
     '<button id="menuButton" class="btn" onclick="goToMainMenu()">Main Menu</button>'
-  ).appendTo(".btn-container");
+  ).appendTo("#options");
   $(
     '<input type="text" name="username" id="username" placeholder="Enter username...">'
-  ).appendTo(".btn-container");
+  ).appendTo("#options");
   $(
     '<button id="save-game" class="btn" onclick="saveGame()">Save Game</button>'
-  ).appendTo(".btn-container");
-  $('<div class="gameover"></div>').appendTo("body");
+  ).appendTo("#options");
+
   gameInit();
   roadInit();
   addCars();
@@ -267,9 +259,7 @@ function gameInit() {
   $("#health").text(health);
   moveRoad();
   spawnObstacle();
-  $(".btn-container").hide();
-  $(".gameover").hide();
-  clearInterval(textBlinker);
+  $("#options").hide();
 }
 
 /**
@@ -339,6 +329,11 @@ function addCars() {
   secondCar.appendTo(gameArea);
 }
 
+/* --
+ * INTERAKCIÓK JÁTÉK KÖZBEN
+ * --
+ */
+
 /**
  * Eltelt idő alapján történő események kezelése:
  * Eltelt idő megjelenítése a felhasználónak. (Mostani idő és a játék kezdetének ideje alapján)
@@ -364,11 +359,6 @@ function loadTimer() {
     }
   }, 500);
 }
-
-/* --
- * INTERAKCIÓK JÁTÉK KÖZBEN
- * --
- */
 
 /**
  *  Autók mozgatása minden irányba (eseménykezeléssel)
@@ -603,9 +593,10 @@ function playCrashSound() {
  * */
 function gameOver(msg) {
   isGameOver = true;
-  $(".btn-container").show();
-  $(".gameover").append("GAME OVER" + msg);
-  $(".gameover").show();
+  $('<div id="game-over"></div>').appendTo("body");
+  $("#options").show();
+  $("#game-over").append("GAME OVER" + msg);
+  $("#game-over").show();
   playGameOverSound();
   $("#gamearea").animate(
     {
@@ -642,7 +633,7 @@ function playGameOverSound() {
  * */
 function gameOverBlink() {
   textBlinker = setInterval(function () {
-    $(".gameover").fadeToggle(100);
+    $("#game-over").fadeToggle(100);
   }, 500);
 }
 
@@ -653,19 +644,12 @@ function gameOverBlink() {
  * Új játék kezdése.
  * */
 function resetGame() {
-  $("#gamearea").animate(
-    {
-      opacity: 1,
-    },
-    700
-  );
   $("#gamearea").remove();
-  $(".gameover").remove();
-  $(".btn-container").remove();
+  $("#game-over").remove();
+  $("#options").remove();
   clearInterval(timerInterval);
+  clearInterval(textBlinker);
   $(window).off("keydown", moveCar);
-
-  startGame();
 }
 
 /**
@@ -673,13 +657,9 @@ function resetGame() {
  * Menü megjelenítése
  */
 function goToMainMenu() {
-  $(".btn-container").remove();
-  $("#gamearea").remove();
-  $(".gameover").remove();
+  resetGame();
   $("#leaderboard-container").remove();
-  $(window).off("keydown", moveCar);
-  clearInterval(timerInterval);
-  getMenu();
+  menu.show();
 }
 
 /**
@@ -689,7 +669,7 @@ function goToMainMenu() {
  * mentés
  */
 async function saveGame() {
-  $(".gameover").empty().append("SAVING...");
+  $("#game-over").empty().append("SAVING...");
   let userInput = $("#username").val().trim();
   if (await isUsernameTaken(userInput)) {
     alert("Username is already taken!");

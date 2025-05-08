@@ -145,9 +145,9 @@ p {
 
 /* Ha vesztünk, ez a szöveg jelenik meg.
 ** absolute, z-index:1, hogy minden felett lássuk.
-** Az osztályon belüli bekezdésben van a game over oka.
+** Az id-n belüli bekezdésben van a game over oka.
 */
-.gameover {
+#game-over {
   position: absolute;
   color: white;
   font-size: 8vh;
@@ -157,7 +157,7 @@ p {
   text-align: center;
 }
 
-.gameover p {
+#game-over p {
   font-size: 2.5vh;
   letter-spacing: 1vh;
 }

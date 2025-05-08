@@ -82,12 +82,12 @@
         query,
         orderBy,
         where,
-        Timestamp 
+        Timestamp,
       } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-      // Webapp config
+      // Webapp konfiguráció
       const firebaseConfig = {
-        apiKey: "paste_api_key",
+        apiKey: "paste_key",
         authDomain: "highway-racers-1352b.firebaseapp.com",
         projectId: "highway-racers-1352b",
         storageBucket: "highway-racers-1352b.firebasestorage.app",
@@ -95,13 +95,12 @@
         appId: "1:1060445680992:web:a58ad6f4366efbe962da05",
       };
 
-      // Initialize Firebase
+      // Firebase indítása
       const app = initializeApp(firebaseConfig);
 
-      // Initialize Firestore and attach to window
+      // Window segítségével érjük el script.js-ben a lekért adatokat
       window.db = getFirestore(app);
 
-      // Attach Firestore helpers to window for use in non-module scripts
       window.collection = collection;
       window.addDoc = addDoc;
       window.getDocs = getDocs;
